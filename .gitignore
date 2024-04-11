@@ -1,5 +1,8 @@
-# Ignore virtual environment directory
-venv/
+# Temp files
+**/*.log
+**/nohup.out
+**/*.mkv
 
-# Ignore all log files
-*.log
+# Run files
+venv/
+output/

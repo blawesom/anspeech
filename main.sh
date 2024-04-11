@@ -6,6 +6,9 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
+mkdir -p output
+cd output
+
 # TODO: correct nohup out error for anstream.sh
 nohup setsid bash -c "./anstream.sh $1 >> stream.log &" &
 nohup setsid bash -c "./antranscript.sh >> transcript.log &" &
