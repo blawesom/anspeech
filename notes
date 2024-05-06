@@ -16,9 +16,14 @@ CONF 3080 10G
 \\perf transcribe medium model: 3min22 pour 16min09 de flux
 \\perf transcribe small model:  1min57 pour 16min09 de flux
 
+CONF 3090 24G
+\\perf transcribe large model: 4min55 pour 16min09 de flux
+\\perf transcribe medium model: 2min30 pour 16min09 de flux
+\\perf transcribe small model: 
+
 CONF A100 40G
 \\perf transcribe large model: 4min45 pour 16min09 de flux
-\\perf transcribe medium model: 2min58 pour 16min09 de flux
+\\perf transcribe medium model: 2min28 pour 16min09 de flux
 \\perf transcribe small model:  1min37 pour 16min09 de flux
 
 diff -y medium large
