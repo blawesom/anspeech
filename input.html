@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Converter</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label,
+        .input-group input {
+            width: 300px;
+        }
+        .submit-button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function convertUrl() {
+            const url = $('#url').val();
+            const segmentTime = $('#segment_time').val();
+
+            $.ajax({
+                url: '/convert',
+                method: 'POST',
+                data: {
+                    url: url,
+                },
+                success: function(response) {
+                    alert(response.message);
+                }
+            });
+        }
+
+        $(function() {
+            $('#app').html(
+                `<div class="container">
+                    <div class="input-group">
+                        <label>URL:</label>
+                        <input id="url" type="text" required/>
+                    </div>
+                    <button class="submit-button" onclick="convertUrl()">Convert</button>
+                </div>`
+            );
+        });
+    </script>
+</body>
+</html>
