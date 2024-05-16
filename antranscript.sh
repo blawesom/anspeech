@@ -15,20 +15,18 @@ while true; do
             echo -e "$timestamp New segment found, running audio conversion..."
             ffmpeg -i $file -map 0:1 -c copy "${file%mkv}m4a" -y
             echo -e "$timestamp Conversion completed, running transcription..."
-            whisper "${file%mkv}m4a" --model medium --language fr --output_format txt
-            echo -e "$timestamp Transcription completed."
           else
             echo -e "$timestamp Skipping M4A conversion for $file already exists"  
             echo -e "$timestamp Running transcription..."
-            whisper "${file%mkv}m4a" --model large --language fr --output_format txt
-            echo -e "$timestamp Transcription completed."
-            cat *.txt > $today.txt
-            echo -e "$timestamp Output concatenated into $today.txt."
-            s3cmd put $today.txt s3://public/
-            echo -e "$timestamp New file $today.txt published."
-            s3cmd setacl s3://public/$today.txt --acl-public
-            echo -e "$timestamp https://oos.eu-west-2.outscale.com/public/$today.txt is now public."
           fi
+          whisper "${file%mkv}m4a" --model large --language fr --output_format txt
+          echo -e "$timestamp Transcription completed."
+          cat *.txt > $today.txt
+          echo -e "$timestamp Output concatenated into $today.txt."
+          s3cmd put $today.txt s3://public/
+          echo -e "$timestamp New file $today.txt published."
+          s3cmd setacl s3://public/$today.txt --acl-public
+          echo -e "$timestamp https://oos.eu-west-2.outscale.com/public/$today.txt is now public."
         else
           echo -e "$timestamp Skipping TXT transcription for $file already exists"
           sleep 1
