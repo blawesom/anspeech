@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gunicorn -b 0.0.0.0 flask_server:app --capture-output --log-file output.log &
+gunicorn -b 0.0.0.0 flask_server:app --capture-output --log-file gunicorn.log &
 
 mkdir -p output
 cd output

@@ -6,6 +6,6 @@ ffmpeg -i anfile.mkv -map 0:1 -c copy anfile.m4a
 
 gunicorn -b 0.0.0.0 flask_server:app
 
-curl -X POST http://localhost:8000/get_stream \
+curl -X POST http://an.laplane.net:8080/get_stream \
 -H 'Content-Type: application/json' \
--d '{"url": "http://assemblee-nationale.akamaized.net/live/live36/stream36.m3u8"}'
+-d '{"url": "http://assemblee-nationale.akamaized.net/live/live36/stream35.m3u8"}'

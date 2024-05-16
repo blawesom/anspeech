@@ -34,10 +34,9 @@
     <script>
         function convertUrl() {
             const url = $('#url').val();
-            const segmentTime = $('#segment_time').val();
 
             $.ajax({
-                url: 'http://localhost:8000/get_stream',
+                url: 'http://an.laplane.net:8080/get_stream',
                 method: 'POST',
                 data: {
                     url: url,
