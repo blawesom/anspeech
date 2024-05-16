@@ -1,14 +1,21 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>Transcript result</title>
 </head>
 <body>
-  <h1>TEXT OUTPUT</h1>
   <p id="text-content"></p>
   <script>
-    const textURL = "https://oos.eu-west-2.outscale.com/public/07-05-2024.txt";
+    // Create a new Date object for today's date
+    const today = new Date();
+
+    // Format the date in the desired format (%d-%m-%Y)
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Add leading zero for single-digit months
+    const day = String(today.getDate()).padStart(2, '0');  // Add leading zero for single-digit days
+
+    // Construct the URL with the formatted date
+    const textURL = "https://oos.eu-west-2.outscale.com/public/" + `${day}-${month}-${year}` + ".txt";
 
     fetch(textURL)
       .then(response => response.text())

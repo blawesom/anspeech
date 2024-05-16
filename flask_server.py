@@ -1,57 +1,39 @@
-import flask
+from flask import Flask, request, jsonify
 import subprocess
-import os
-import datetime
-import json
-import threading
+from datetime import datetime
 
-app = flask.Flask(__name__)
-lock_file = "lock.txt"
+app = Flask(__name__)
 
-def check_url_processed(url):
-    try:
-        with open(lock_file, 'r') as file:
-            if url in json.load(file):
-                return True
-    except FileNotFoundError:
-        pass
-    return False
+@app.route('/get_stream', methods=['POST'])
+def get_strean():
+  """
+  Receives data containing playlist URL, stream number, and segment duration in JSON format and processes it using ffmpeg.
+  """
+  data = request.get_json()
+  url = data.get('url')
+  stream_number = url.split('/')[-1].split('.')[0]
+  segment_duration = data.get('segment_duration', 300)  # Default 5 minutes
 
-def process_url(url):
-    segment_time = "0:10"
-    # Create the base FFmpeg command
-    base_command = ["ffmpeg", "-i", url, "-c", "copy", "-bsf:a", "aac_adtstoasc", "-f", "segment"]
+  if not url or not stream_number:
+    return jsonify({'error': 'Missing required data (url or stream_number)'}), 400
 
-    # Split the segment time into hours and minutes
-    hours, minutes = map(int, segment_time.split(":"))
-    total_seconds = hours * 60 * 60 + minutes * 60
+  # Get current date and hour
+  now = datetime.now()
+  date_str = now.strftime("%d-%m-%Y")
+  hour_str = now.strftime("%H")
 
-    # Iterate through each segment
-    for i in range(0, total_seconds, segment_time):
-        # Calculate the start time for this segment
-        start_time = (i / 60) % 60
-        end_time = (i / 60 + int(minutes/60) + 1) % 60
+  # Generate output filename prefix
+  filename_prefix = f"an-{date_str}-{hour_str}-{stream_number}"
 
-        # Construct the segment filename
-        filename = f"an-{os.path.basename(url)}_{str(i // 60).zfill(2)}-{str(start_time).zfill(2)}.mkv"
+  # Construct ffmpeg command
+  ffmpeg_cmd = f"ffmpeg -i {url} -c copy -bsf:a aac_adtstoasc -f segment -segment_time {segment_duration} {filename_prefix}_%02d.mkv"
 
-        # Construct the segment command
-        segment_command = base_command + ["-segment_time", f"{int(i)}", "-segment_atclocktime", f"{int(i)}:{str(start_time).zfill(2)}", filename]
-
-        # Run the segment command
-        subprocess.run(segment_command, check=True)
-
-@app.route('/convert', methods=['POST'])
-def convert():
-    url = flask.request.json['url']
-
-    if check_url_processed(url):
-        return flask.jsonify({"message": "The URL is already being processed!"})
-
-    process_thread = threading.Thread(target=process_url, args=(url))
-    process_thread.start()
-    today = datetime.now().strftime('%d-%m-%Y')
-    return flask.jsonify({"message": f"Stream is being converted! You will find the result here: https://oos.eu-west-2.outscale.com/public/${today}.txt"})
+  try:
+    # Run ffmpeg command
+    subprocess.run(ffmpeg_cmd.split(), check=True)
+    return jsonify({'message': 'Playlist downloaded successfully'}), 200
+  except subprocess.CalledProcessError as e:
+    return jsonify({'error': f"FFmpeg error: {e}"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+  app.run(host='0.0.0.0', debug=True)

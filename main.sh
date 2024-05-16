@@ -9,10 +9,10 @@ fi
 mkdir -p output
 cd output
 
-# TODO: correct nohup out error for anstream.sh
-nohup setsid bash -c "../anstream.sh $1 >> stream.log &"
+# anstream to flask serv
+# nohup setsid bash -c "../anstream.sh $1 >> stream.log &"
 nohup setsid bash -c "../antranscript.sh >> transcript.log &"
 
-echo -e "\nStream and transcript started at $(date +"%H:%M:%S")\n"
+# echo -e "\nStream and transcript started at $(date +"%H:%M:%S")\n"
 
-ps aux --forest | grep "/bin/bash"
+# ps aux --forest | grep "/bin/bash"
