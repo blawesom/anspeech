@@ -1,0 +1,24 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transcript result</title>
+</head>
+<body>
+  <h1>TEXT OUTPUT</h1>
+  <p id="text-content"></p>
+  <script>
+    const textURL = "https://oos.eu-west-2.outscale.com/public/07-05-2024.txt";
+
+    fetch(textURL)
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("text-content").textContent = data;
+      })
+      .catch(error => {
+        console.error(error);
+        document.getElementById("text-content").textContent = "Error fetching data";
+      });
+  </script>
+</body>
+</html>
