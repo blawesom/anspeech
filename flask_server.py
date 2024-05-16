@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import psutil
 import subprocess
 from threading import Thread
 from datetime import datetime
@@ -37,6 +38,9 @@ def get_strean():
   if not url or not stream_number:
     return jsonify({'error': 'Missing required data (url or stream_number)'}), 400
 
+  if not any(p.name() == "ffmpeg" for p in psutil.process_iter()):
+    return jsonify({'error': 'Already processing a stream'}), 400
+  
   # Create and start a separate thread for ffmpeg processing
   thread = Thread(target=process_stream, args=(url, stream_number, segment_duration))
   thread.start()
