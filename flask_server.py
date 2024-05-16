@@ -26,7 +26,7 @@ def get_strean():
   filename_prefix = f"an-{date_str}-{hour_str}-{stream_number}"
 
   # Construct ffmpeg command
-  ffmpeg_cmd = f"ffmpeg -i {url} -c copy -bsf:a aac_adtstoasc -f segment -segment_time {segment_duration} {filename_prefix}_%02d.mkv"
+  ffmpeg_cmd = f"ffmpeg -i {url} -c copy -bsf:a aac_adtstoasc -f segment -segment_time {segment_duration} ./output/{filename_prefix}_%02d.mkv"
 
   try:
     # Run ffmpeg command

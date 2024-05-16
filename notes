@@ -4,9 +4,8 @@ files=$(find . -name "$pattern" -type f | sort -rn | head -n 1)
 ffmpeg -i http://assemblee-nationale.akamaized.net/live/live36/stream36.m3u8 -c copy -bsf:a aac_adtstoasc -f segment -segment_time $ an-$(date +"%d-%m-%Y")_%02d.mkv
 ffmpeg -i anfile.mkv -map 0:1 -c copy anfile.m4a
 
-Process:
-- Python app with simple api path
-- / returns current stream being processed and available txt(s)
--- link to available txt(s)
-- get api parameter (stream36.m3u8) and check availability
-- Check if process for this stream is already running
+gunicorn -b 0.0.0.0 flask_server:app
+
+curl -X POST http://localhost:8000/get_stream \
+-H 'Content-Type: application/json' \
+-d '{"url": "http://assemblee-nationale.akamaized.net/live/live36/stream36.m3u8"}'

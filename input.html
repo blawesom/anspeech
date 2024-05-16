@@ -37,7 +37,7 @@
             const segmentTime = $('#segment_time').val();
 
             $.ajax({
-                url: '/get_stream',
+                url: 'http://localhost:8000/get_stream',
                 method: 'POST',
                 data: {
                     url: url,
