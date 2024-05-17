@@ -27,6 +27,7 @@ while true; do
           echo -e "$timestamp New file $today.txt published."
           s3cmd setacl s3://public/$today.txt --acl-public
           echo -e "$timestamp https://oos.eu-west-2.outscale.com/public/$today.txt is now public."
+          rm $today.txt
         else
           echo -e "$timestamp Skipping TXT transcription for $file already exists"
           sleep 1
