@@ -1,63 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Stream Converter</title>
-    <style>
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .input-group {
-            margin-bottom: 20px;
-        }
-        .input-group label,
-        .input-group input {
-            width: 300px;
-        }
-        .submit-button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream converter</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    form {
+      display: flex;
+      align-items: center;
+    }
+    #url-input {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      flex: 1;
+      margin-right: 1rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div id="app"></div>
+  <h1>Enter stream adress</h1>
+  <form id="url-form">
+    <input type="text" id="url-input" placeholder="http://example.com">
+    <button type="submit">Submit</button>
+  </form>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        function convertUrl() {
-            const url = $('#url').val();
+  <script>
+    const form = document.getElementById('url-form');
+    form.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent default form submission
 
-            $.ajax({
-                url: 'http://an.laplane.net/get_stream',
-                method: 'POST',
-                data: {
-                    url: url,
-                },
-                success: function(response) {
-                    alert(response.message);
-                }
-            });
-        }
+      const url = document.getElementById('url-input').value;
 
-        $(function() {
-            $('#app').html(
-                `<div class="container">
-                    <div class="input-group">
-                        <label>URL:</label>
-                        <input id="url" type="text" required/>
-                    </div>
-                    <button class="submit-button" onclick="convertUrl()">Convert</button>
-                </div>`
-            );
-        });
-    </script>
+      // Create a JSON object with the URL
+      const data = { url: url };
+
+      // Send the JSON data to the server (using Fetch API)
+      fetch('http://an.laplane.net/get_stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.text())
+      .then(data => {
+        // Handle server response (optional)
+        console.log('Server response:', data);
+      })
+      .catch(error => {
+        console.error('Error sending data:', error);
+      });
+    });
+  </script>
 </body>
 </html>
