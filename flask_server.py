@@ -26,7 +26,7 @@ def process_stream(url, stream_number, segment_duration):
 
 
 @app.route('/get_stream', methods=['POST'])
-def get_strean():
+def get_stream():
   """
   Receives data containing playlist URL, stream number, and segment duration in JSON format and processes it using ffmpeg.
   """
@@ -36,16 +36,19 @@ def get_strean():
   segment_duration = data.get('segment_duration', 300)  # Default 5 minutes
 
   if not url or not stream_number:
-    return jsonify({'error': 'Missing required data (url or stream_number)'}), 400
+    response = jsonify({'error': 'Missing required data (url or stream_number)'})
+    return response, 400
 
-  if not any(p.name() == "ffmpeg" for p in psutil.process_iter()):
-    return jsonify({'error': 'Already processing a stream'}), 400
+  if any(p.name() == "ffmpeg" for p in psutil.process_iter()):
+    response = jsonify({'error': 'Already processing a stream'})
+    return response, 400
   
   # Create and start a separate thread for ffmpeg processing
   thread = Thread(target=process_stream, args=(url, stream_number, segment_duration))
   thread.start()
 
-  return jsonify({'message': 'Stream processing initiated'}), 202 
+  response = jsonify({'message': 'Stream processing initiated'})
+  return response, 202
 
 
 if __name__ == '__main__':
