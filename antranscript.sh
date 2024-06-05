@@ -21,7 +21,7 @@ while true; do
           fi
           whisper "${file%mkv}m4a" --model large --language fr --output_format txt
           echo -e "$timestamp Transcription completed."
-          cat *.txt > $today.txt
+          for f in *.txt; do cat "$f" >> $today.txt; echo >> output.txt; done
           echo -e "$timestamp Output concatenated into $today.txt."
           s3cmd put $today.txt s3://public/
           echo -e "$timestamp New file $today.txt published."
