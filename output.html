@@ -2,12 +2,6 @@
 <html>
 <head>
   <title>Transcript result</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 2rem;
-    }
-    </style>
 </head>
 <body>
   <pre id="text-content"></pre>
@@ -26,8 +20,8 @@
     fetch(textURL)
       .then(response => response.text())
       .then(data => {
-        document.getElementById("text-content").textContent = data;
-      })
+      	document.getElementById("text-content").textContent = data;
+	})
       .catch(error => {
         console.error(error);
         document.getElementById("text-content").textContent = "Error fetching data";

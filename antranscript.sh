@@ -21,13 +21,13 @@ while true; do
           fi
           whisper "${file%mkv}m4a" --model large --language fr --output_format txt
           echo -e "$timestamp Transcription completed."
-          for f in *.txt; do cat "$f" >> $today.txt; echo >> $today.txt; done
+          cat *.txt > $today.txt
           echo -e "$timestamp Output concatenated into $today.txt."
           s3cmd put $today.txt s3://public/
           echo -e "$timestamp New file $today.txt published."
           s3cmd setacl s3://public/$today.txt --acl-public
           echo -e "$timestamp https://oos.eu-west-2.outscale.com/public/$today.txt is now public."
-          rm $today.txt
+	  rm $today.txt
         else
           echo -e "$timestamp Skipping TXT transcription for $file already exists"
           sleep 1

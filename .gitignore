@@ -2,6 +2,7 @@
 **/*.log
 **/nohup.out
 **/*.mkv
+__pycache__
 
 # Run files
 venv/
@@ -9,6 +10,3 @@ output/
 
 # OS files
 **/.DS_Store
-
-# Python
-__pycache__
