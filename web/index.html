@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnSpeech - Stream Transcription</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h1 { color: #333; margin-bottom: 5px; }
+    .subtitle { color: #666; font-size: 14px; }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 18px;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    button:hover { background: #45a049; }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      display: block;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      display: block;
+    }
+
+    .job-item {
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .job-url {
+      font-size: 13px;
+      color: #333;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 10px;
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge.processing {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .badge.completed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge.failed {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .job-time {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .transcript-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+    }
+
+    .transcript-link:hover {
+      background: #f9f9f9;
+      border-color: #4CAF50;
+    }
+
+    .transcript-date {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .transcript-size {
+      font-size: 13px;
+      color: #999;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .health-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .health-indicator.healthy { background: #4CAF50; }
+    .health-indicator.unhealthy { background: #f44336; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎙️ AnSpeech</h1>
+      <p class="subtitle">Live Stream Transcription Service</p>
+    </header>
+
+    <!-- Submit Form -->
+    <div class="card">
+      <h2>Submit Stream</h2>
+      <form id="stream-form">
+        <label for="url-input">Stream URL</label>
+        <input
+          type="text"
+          id="url-input"
+          placeholder="https://example.com/stream.m3u8"
+          required
+        />
+
+        <label for="duration-input">Segment Duration (seconds)</label>
+        <input
+          type="number"
+          id="duration-input"
+          value="600"
+          min="60"
+          max="3600"
+        />
+
+        <button type="submit" id="submit-btn">
+          <span id="submit-text">Start Transcription</span>
+        </button>
+      </form>
+
+      <div id="status-message" class="status"></div>
+    </div>
+
+    <!-- Active Jobs -->
+    <div class="card">
+      <h2>
+        <span class="health-indicator" id="health-indicator"></span>
+        Active Jobs
+      </h2>
+      <div id="jobs-list"></div>
+    </div>
+
+    <!-- Recent Transcripts -->
+    <div class="card">
+      <h2>Recent Transcripts</h2>
+      <div id="transcripts-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '';
+    let pollInterval;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchJobs();
+      fetchTranscripts();
+      checkHealth();
+
+      // Poll every 5 seconds
+      pollInterval = setInterval(() => {
+        fetchJobs();
+        fetchTranscripts();
+        checkHealth();
+      }, 5000);
+    });
+
+    // Submit form
+    document.getElementById('stream-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const url = document.getElementById('url-input').value;
+      const duration = parseInt(document.getElementById('duration-input').value);
+      const submitBtn = document.getElementById('submit-btn');
+      const submitText = document.getElementById('submit-text');
+      const statusMsg = document.getElementById('status-message');
+
+      submitBtn.disabled = true;
+      submitText.innerHTML = '<span class="loader"></span>Processing...';
+
+      try {
+        const response = await fetch(`${API_BASE}/get_stream`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, segment_duration: duration })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          statusMsg.className = 'status success';
+          statusMsg.textContent = '✓ Stream processing started!';
+          document.getElementById('url-input').value = '';
+          fetchJobs();
+        } else {
+          throw new Error(data.error || 'Failed to start stream');
+        }
+      } catch (error) {
+        statusMsg.className = 'status error';
+        statusMsg.textContent = '✗ ' + error.message;
+      } finally {
+        submitBtn.disabled = false;
+        submitText.textContent = 'Start Transcription';
+
+        setTimeout(() => {
+          statusMsg.className = 'status';
+        }, 5000);
+      }
+    });
+
+    // Fetch jobs
+    async function fetchJobs() {
+      try {
+        const response = await fetch(`${API_BASE}/api/jobs`);
+        const jobs = await response.json();
+
+        const activeJobs = jobs.filter(j => j.status === 'processing');
+        const container = document.getElementById('jobs-list');
+
+        if (activeJobs.length === 0) {
+          container.innerHTML = '<div class="empty-state">No active jobs</div>';
+          return;
+        }
+
+        container.innerHTML = activeJobs.map(job => `
+          <div class="job-item">
+            <div class="job-header">
+              <div class="job-url" title="${job.stream_url}">${job.stream_url}</div>
+              <span class="badge ${job.status}">${job.status}</span>
+            </div>
+            <div class="job-time">Started: ${formatDate(job.created_at)}</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to fetch jobs:', error);
+      }
+    }
+
+    // Fetch transcripts
+    async function fetchTranscripts() {
+      try {
+        const response = await fetch(`${API_BASE}/api/transcripts`);
+        const transcripts = await response.json();
+
+        const container = document.getElementById('transcripts-list');
+
+        if (transcripts.length === 0) {
+          container.innerHTML = '<div class="empty-state">No transcripts available</div>';
+          return;
+        }
+
+        container.innerHTML = transcripts.map(t => `
+          <a href="${t.url}" target="_blank" class="transcript-link">
+            <span class="transcript-date">📄 ${t.date}</span>
+            <span class="transcript-size">${t.size}</span>
+          </a>
+        `).join('');
+      } catch (error) {
+        console.error('Failed to fetch transcripts:', error);
+      }
+    }
+
+    // Health check
+    async function checkHealth() {
+      try {
+        const response = await fetch(`${API_BASE}/api/health`);
+        const health = await response.json();
+
+        const indicator = document.getElementById('health-indicator');
+        indicator.className = health.status === 'healthy' ? 'health-indicator healthy' : 'health-indicator unhealthy';
+      } catch (error) {
+        document.getElementById('health-indicator').className = 'health-indicator unhealthy';
+      }
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleString();
+    }
+  </script>
+</body>
+</html>
