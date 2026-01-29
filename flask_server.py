@@ -116,6 +116,55 @@ def list_transcripts():
     return jsonify(transcripts)
 
 
+@app.route('/api/transcripts/<filename>/content', methods=['GET'])
+def get_transcript_content(filename):
+    """Fetch transcript content from S3 and serve with proper encoding"""
+    # Validate filename (only allow .txt files with date format)
+    if not filename.endswith('.txt'):
+        return jsonify({'error': 'Invalid file type'}), 400
+
+    # Sanitize filename to prevent path traversal
+    safe_filename = os.path.basename(filename)
+    if safe_filename != filename:
+        return jsonify({'error': 'Invalid filename'}), 400
+
+    try:
+        # Fetch file from S3 using s3cmd
+        result = subprocess.run(
+            ['s3cmd', 'get', f'{Config.S3_BUCKET}{safe_filename}', '--force', '-'],
+            capture_output=True,
+            check=True
+        )
+
+        # Decode content as UTF-8
+        content = result.stdout.decode('utf-8')
+
+        # Return with proper content-type header
+        response = app.response_class(
+            response=content,
+            status=200,
+            mimetype='text/plain; charset=utf-8'
+        )
+        return response
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': 'Transcript not found'}), 404
+    except UnicodeDecodeError:
+        # Fallback: try latin-1 if UTF-8 fails
+        try:
+            content = result.stdout.decode('latin-1')
+            response = app.response_class(
+                response=content,
+                status=200,
+                mimetype='text/plain; charset=utf-8'
+            )
+            return response
+        except:
+            return jsonify({'error': 'Failed to decode transcript'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
