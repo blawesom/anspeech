@@ -136,12 +136,11 @@ def get_transcript_content(filename):
             check=True
         )
 
-        # Decode content as UTF-8
-        content = result.stdout.decode('utf-8')
-
-        # Return with proper content-type header
+        # Return raw bytes directly to avoid Content-Length mismatch
+        # When using strings, Flask calculates Content-Length from character count,
+        # but UTF-8 multi-byte characters (é, è, à, ç) cause byte length to differ
         response = app.response_class(
-            response=content,
+            response=result.stdout,
             status=200,
             mimetype='text/plain; charset=utf-8'
         )
@@ -149,18 +148,6 @@ def get_transcript_content(filename):
 
     except subprocess.CalledProcessError as e:
         return jsonify({'error': 'Transcript not found'}), 404
-    except UnicodeDecodeError:
-        # Fallback: try latin-1 if UTF-8 fails
-        try:
-            content = result.stdout.decode('latin-1')
-            response = app.response_class(
-                response=content,
-                status=200,
-                mimetype='text/plain; charset=utf-8'
-            )
-            return response
-        except:
-            return jsonify({'error': 'Failed to decode transcript'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
