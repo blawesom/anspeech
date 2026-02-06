@@ -159,7 +159,8 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'ffmpeg_active': ffmpeg_running,
-        'active_jobs': len(job_tracker.get_active_jobs())
+        'active_jobs': len(job_tracker.get_active_jobs()),
+        'diarization_enabled': Config.DIARIZATION_ENABLED,
     })
 
 

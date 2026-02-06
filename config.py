@@ -8,8 +8,14 @@ class Config:
     SEGMENT_DURATION = int(os.getenv('SEGMENT_DURATION', '600'))
 
     # Whisper settings
-    WHISPER_MODEL = os.getenv('WHISPER_MODEL', 'large')
+    WHISPER_MODEL = os.getenv('WHISPER_MODEL', 'large-v3')
     WHISPER_LANGUAGE = os.getenv('WHISPER_LANGUAGE', 'fr')
+
+    # Diarization settings
+    DIARIZATION_ENABLED = os.getenv('DIARIZATION_ENABLED', 'true').lower() == 'true'
+    HF_TOKEN = os.getenv('HF_TOKEN', '')
+    MIN_SPEAKERS = int(os.getenv('MIN_SPEAKERS', '0')) or None
+    MAX_SPEAKERS = int(os.getenv('MAX_SPEAKERS', '0')) or None
 
     # S3 settings
     S3_BUCKET = os.getenv('S3_BUCKET', 's3://public/')

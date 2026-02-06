@@ -16,6 +16,18 @@ mkdir -p output web
 if [ ! -f .env ]; then
     cp .env.example .env
     echo "Created .env file - please configure it"
+    echo "IMPORTANT: Set HF_TOKEN in .env for speaker diarization (requires Hugging Face token)"
+fi
+
+# Validate diarization config
+source .env 2>/dev/null || true
+if [ "${DIARIZATION_ENABLED:-true}" = "true" ] && [ -z "$HF_TOKEN" ]; then
+    echo ""
+    echo "WARNING: Diarization is enabled but HF_TOKEN is not set."
+    echo "  - Set HF_TOKEN in .env with your Hugging Face access token"
+    echo "  - Accept the pyannote model license at https://huggingface.co/pyannote/speaker-diarization-3.1"
+    echo "  - Or set DIARIZATION_ENABLED=false to disable diarization"
+    echo ""
 fi
 
 # Restart service if using systemd

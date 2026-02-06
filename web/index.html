@@ -308,10 +308,20 @@
     .transcript-content {
       white-space: pre-wrap;
       word-wrap: break-word;
-      font-family: 'Courier New', Courier, monospace;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
       line-height: 1.8;
       color: #333;
+    }
+
+    .speaker-label {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 12px;
+      margin-bottom: 2px;
     }
 
     .transcript-loading {
@@ -569,7 +579,7 @@
         const text = await response.text();
         currentTranscript.content = text;
         content.innerHTML = '';
-        content.textContent = text;
+        content.innerHTML = formatTranscriptHTML(text);
         content.classList.add('transcript-content');
       } catch (error) {
         content.innerHTML = `<div class="transcript-error">Failed to load transcript: ${error.message}</div>`;
@@ -612,6 +622,52 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    }
+
+    // Speaker color palette
+    const SPEAKER_COLORS = [
+      { bg: '#e3f2fd', fg: '#1565c0' },
+      { bg: '#fce4ec', fg: '#c62828' },
+      { bg: '#e8f5e9', fg: '#2e7d32' },
+      { bg: '#fff3e0', fg: '#e65100' },
+      { bg: '#f3e5f5', fg: '#6a1b9a' },
+      { bg: '#e0f7fa', fg: '#00695c' },
+      { bg: '#fff8e1', fg: '#f57f17' },
+      { bg: '#fbe9e7', fg: '#bf360c' },
+    ];
+
+    function getSpeakerColor(speaker, colorMap) {
+      if (!colorMap.has(speaker)) {
+        const idx = colorMap.size % SPEAKER_COLORS.length;
+        colorMap.set(speaker, SPEAKER_COLORS[idx]);
+      }
+      return colorMap.get(speaker);
+    }
+
+    // Format transcript text into HTML with speaker labels styled
+    function formatTranscriptHTML(text) {
+      const speakerPattern = /^\[([^\]]+)\]$/;
+      const lines = text.split('\n');
+      const colorMap = new Map();
+      let html = '';
+
+      for (const line of lines) {
+        const match = line.match(speakerPattern);
+        if (match) {
+          const speaker = match[1];
+          const color = getSpeakerColor(speaker, colorMap);
+          html += `<div><span class="speaker-label" style="background:${color.bg};color:${color.fg}">${escapeHTML(speaker)}</span></div>`;
+        } else {
+          html += escapeHTML(line) + '\n';
+        }
+      }
+      return html;
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
     }
 
     // Modal event listeners
