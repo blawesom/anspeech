@@ -1,4 +1,10 @@
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env file from the project root
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 class Config:
     # Paths
@@ -14,8 +20,8 @@ class Config:
     # Diarization settings
     DIARIZATION_ENABLED = os.getenv('DIARIZATION_ENABLED', 'true').lower() == 'true'
     HF_TOKEN = os.getenv('HF_TOKEN', '')
-    MIN_SPEAKERS = int(os.getenv('MIN_SPEAKERS', '0')) or None
-    MAX_SPEAKERS = int(os.getenv('MAX_SPEAKERS', '0')) or None
+    MIN_SPEAKERS = int(os.getenv('MIN_SPEAKERS', '1')) or None
+    MAX_SPEAKERS = int(os.getenv('MAX_SPEAKERS', '10')) or None
 
     # S3 settings
     S3_BUCKET = os.getenv('S3_BUCKET', 's3://public/')
