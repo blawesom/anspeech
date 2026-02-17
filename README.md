@@ -97,7 +97,6 @@ Returns diarization status:
 - **[antranscript.sh](antranscript.sh)** - Transcription worker process
 - **[web/index.html](web/index.html)** - Unified web interface with speaker label rendering
 - **[clean.sh](clean.sh)** - Cleanup script for processes and old files
-- **[deploy.sh](deploy.sh)** - Deployment automation
 
 ## Configuration
 
@@ -112,8 +111,8 @@ WHISPER_LANGUAGE=fr             # Transcription language
 # Diarization (speaker identification)
 DIARIZATION_ENABLED=true        # Enable/disable speaker diarization
 HF_TOKEN=                       # Hugging Face token (required for diarization)
-MIN_SPEAKERS=                   # Optional: hint for minimum speakers
-MAX_SPEAKERS=                   # Optional: hint for maximum speakers
+MIN_SPEAKERS=1                  # Minimum expected speakers (default: 1)
+MAX_SPEAKERS=10                 # Maximum expected speakers (default: 10)
 
 # Storage
 S3_BUCKET=s3://public/          # S3 bucket for uploads
@@ -140,15 +139,6 @@ MAX_CONCURRENT_STREAMS=1        # Max simultaneous streams
 The cleanup script will:
 - Terminate all ffmpeg, gunicorn, and transcription processes
 - Delete files older than RETENTION_DAYS (default: 7 days)
-
-## Deployment
-
-```bash
-# Automated deployment
-./deploy.sh
-```
-
-The deploy script validates your diarization configuration and warns if `HF_TOKEN` is missing.
 
 ## Access Transcripts
 
