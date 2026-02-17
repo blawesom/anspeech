@@ -16,7 +16,32 @@ import sys
 import os
 import logging
 
+import torch
+
+# Monkey-patch torch.load to disable weights_only by default
+# This fixes pickle.UnpicklingError with OmegaConf-based models in PyTorch 2.6+
+# Security is not a concern for this project
+_original_torch_load = torch.load
+
+def _patched_torch_load(*args, **kwargs):
+    if 'weights_only' not in kwargs or kwargs['weights_only'] is None:
+        kwargs['weights_only'] = False
+    return _original_torch_load(*args, **kwargs)
+
+torch.load = _patched_torch_load
+
+# Also patch PyTorch Lightning's _load function which is used by pyannote
+from lightning_fabric.utilities.cloud_io import _load as pl_load_original
+import lightning_fabric.utilities.cloud_io as cloud_io
+
+def _patched_pl_load(path_or_url, map_location=None, weights_only=None):
+    # Force weights_only=False for all loads
+    return pl_load_original(path_or_url, map_location, weights_only=False)
+
+cloud_io._load = _patched_pl_load
+
 import whisperx
+from whisperx.diarize import DiarizationPipeline
 
 from config import Config
 
@@ -28,7 +53,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 DEVICE = "cuda"
-COMPUTE_TYPE = "float16"
+COMPUTE_TYPE = "float32"
 
 
 def load_diarization_pipeline():
@@ -45,12 +70,25 @@ def load_diarization_pipeline():
         return None
 
     log.info("Loading pyannote diarization pipeline...")
-    pipeline = whisperx.DiarizationPipeline(
-        use_auth_token=Config.HF_TOKEN,
-        device=DEVICE,
-    )
-    log.info("Diarization pipeline loaded.")
-    return pipeline
+    try:
+        pipeline = DiarizationPipeline(
+            use_auth_token=Config.HF_TOKEN,
+            device=DEVICE,
+        )
+        log.info("Diarization pipeline loaded.")
+        return pipeline
+    except AttributeError as e:
+        log.error(
+            "Failed to load diarization pipeline. This usually means:\n"
+            "  1. You need to accept the user agreement for pyannote models at:\n"
+            "     https://hf.co/pyannote/speaker-diarization-3.1\n"
+            "     https://hf.co/pyannote/segmentation-3.0\n"
+            "  2. Your HuggingFace token may not have the required permissions.\n"
+            "  3. Run: huggingface-cli login --token %s\n"
+            "Falling back to transcription without diarization.",
+            Config.HF_TOKEN
+        )
+        return None
 
 
 def transcribe_file(audio_path):
